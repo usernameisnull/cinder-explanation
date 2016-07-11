@@ -47,12 +47,31 @@ LOG = logging.getLogger(__name__)
 
 def pipeline_factory(loader, global_conf, **local_conf):
     """A paste pipeline replica that keys off of auth_strategy."""
+    # 从/etc/cinder/api-paste.ini里配置里得到调用
+    # [composite:openstack_volume_api_v1]
+    # use = call:cinder.api.middleware.auth:pipeline_factory
+    # noauth = request_id faultwrap sizelimit osprofiler noauth apiv1
+    # keystone = request_id faultwrap sizelimit osprofiler authtoken keystonecontext apiv1
+    # keystone_nolimit = request_id faultwrap sizelimit osprofiler authtoken keystonecontext apiv1
+
+    # 结果是-----------------
+    #     loader=<paste.deploy.loadwsgi.ConfigLoader object at 0x7fecbf8e8050>
+    # global_conf={'__file__': '/root/paste.deploy.demo/api-paste.ini', 'here': '/root/paste.deploy.demo'}
+    # local_conf={'keystone': 'request_id faultwrap sizelimit osprofiler authtoken keystonecontext apiv1',
+    # 'noauth': 'request_id faultwrap sizelimit osprofiler noauth apiv1',
+    # 'keystone_nolimit': 'request_id faultwrap sizelimit osprofiler authtoken keystonecontext apiv1'}
+
     pipeline = local_conf[CONF.auth_strategy]
-    if not CONF.api_rate_limit:
+     # cfg.StrOpt('auth_strategy',
+     #           default='keystone',
+     #           choices=['noauth', 'keystone', 'deprecated'],
+     #           help='The strategy to use for auth. Supports noauth, keystone, '
+     #                'and deprecated.'),
+    if not CONF.api_rate_limit:                # True
         limit_name = CONF.auth_strategy + '_nolimit'
         pipeline = local_conf.get(limit_name, pipeline)
     pipeline = pipeline.split()
-    filters = [loader.get_filter(n) for n in pipeline[:-1]]
+    filters = [loader.get_filter(n) for n in pipeline[:-1]]     # 为啥不要最后一个呢?哦!最后一个需要是app,前面的菜都是filter
     app = loader.get_app(pipeline[-1])
     filters.reverse()
     for filter in filters:

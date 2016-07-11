@@ -27,6 +27,13 @@ LOG = logging.getLogger(__name__)
 
 
 def root_app_factory(loader, global_conf, **local_conf):
+    # /root/paste.deploy.demo
+    #    test.py # 运行这个文件产生的
+    #    api-paste.ini
+    # loader = < paste.deploy.loadwsgi.ConfigLoader object at 0x7f9984956fd0 >
+    # global_conf = {'__file__': '/root/paste.deploy.demo/api-paste.ini', 'here': '/root/paste.deploy.demo'}
+    # kwargs = {'/v2': 'openstack_volume_api_v2', '/v1': 'openstack_volume_api_v1', '/': 'apiversions'}
+
     if CONF.enable_v1_api:
         LOG.warning(_LW('The v1 api is deprecated and will be removed in the '
                         'Liberty release. You should set enable_v1_api=false '

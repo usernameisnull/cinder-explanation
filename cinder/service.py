@@ -362,7 +362,10 @@ class WSGIService(service.ServiceBase):
         self.name = name
         self.manager = self._get_manager()
         self.loader = loader or wsgi_common.Loader()
-        self.app = self.loader.load_app(name)   # name = osapi_volume
+        # name = osapi_volume，没有这个name就等着报下面的错吧
+        # LookupError: No section 'main'(prefixed by 'app' or 'application' or 'composite' or 'composit' or
+        # 'pipeline' or 'filter-app') found in config
+        self.app = self.loader.load_app(name)
         self.host = getattr(CONF, '%s_listen' % name, "0.0.0.0")
         self.port = getattr(CONF, '%s_listen_port' % name, 0)
         self.workers = (getattr(CONF, '%s_workers' % name, None) or
